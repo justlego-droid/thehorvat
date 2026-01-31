@@ -49,10 +49,10 @@
             max-width: 500px;
         }
 
-        /* Monogram uses gold color #ffd700 */
+        /* Monogram uses gold color #996515 */
         .logo-svg path {
             fill: none !important;
-            stroke: #ffd700;
+            stroke: #996515;
             stroke-width: 2;
             stroke-linecap: round;
             stroke-linejoin: round;
@@ -181,47 +181,18 @@
 
         /* ==================== TEXT EFFECTS ==================== */
         
-        /* Text layer container */
+        /* Text layer container - 4 second gradual fade in */
         .layer.text-layer {
-            transition: opacity 0.5s ease-out;
+            transition: opacity 4s ease-out;
         }
         
-        /* Text drawing reveal container */
-        .text-draw-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            /* Clip mask that reveals text progressively */
-            clip-path: inset(0 100% 0 0);
-            transition: clip-path 0s;
-        }
-        
-        .text-draw-container.drawing {
-            animation: text-draw-reveal 4s ease-out forwards;
-        }
-        
-        @keyframes text-draw-reveal {
-            0% {
-                clip-path: inset(0 100% 0 0);
-            }
-            100% {
-                clip-path: inset(0 0% 0 0);
-            }
-        }
-        
-        .text-draw-container object {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        
-        /* Text object - soft glow pulse only on middle 1/3 */
+        /* Text object */
         .layer.text-layer > object {
-            display: none; /* Hide the base object, use draw container instead */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
         
         /* Glow pulse container - clips to middle 1/3 */
@@ -234,7 +205,7 @@
             overflow: hidden;
             pointer-events: none;
             opacity: 0;
-            transition: opacity 1s ease-out 3s; /* Fade in after drawing mostly complete */
+            transition: opacity 1s ease-out 3s; /* Fade in after text mostly visible */
         }
         
         .layer.text-layer.visible .text-glow-middle {
@@ -520,12 +491,9 @@
                 </svg>
             </div>
 
-            <!-- Layer 2: Text with drawing animation, shimmer and sparkle -->
+            <!-- Layer 2: Text with shimmer and sparkle -->
             <div class="layer text-layer" id="textLayer">
                 <object type="image/svg+xml" data="assets/full-text.svg"></object>
-                <div class="text-draw-container" id="textDrawContainer">
-                    <object type="image/svg+xml" data="assets/full-text.svg"></object>
-                </div>
                 <div class="text-glow-middle">
                     <object type="image/svg+xml" data="assets/full-text.svg"></object>
                 </div>
@@ -648,44 +616,43 @@
             // Show invitation container immediately
             invitationContainer.classList.add('visible');
             
-            // Staggered reveal of layers - consecutive delays
-            let delay = 0;
+            // Element timing:
+            // - Arch + copper border drawing starts at 100ms, takes 4.5s to complete
+            // - Birds at 1600ms
+            // - Bottom flowers when arch finishes drawing (4600ms from t0)
+            // - Top flowers + Text appear together (5600ms from t0)
+            // - Sparkles 500ms after text starts
+            // - Particles 500ms after sparkles
             
-            delay += 100;
+            // Arch + copper border (100ms from t0)
             setTimeout(() => {
                 document.getElementById('archLayer').classList.add('visible');
                 startArchFuseEffect();
-            }, delay);
+            }, 100);
 
-            delay += 1500;
+            // Birds (1600ms from t0)
             setTimeout(() => {
                 document.getElementById('birdsLayer').classList.add('visible');
-            }, delay);
+            }, 1600);
 
-            delay += 1900;
-            setTimeout(() => {
-                document.getElementById('topFlowersLayer').classList.add('visible');
-            }, delay);
-
-            delay += 1000;
+            // Bottom flowers - when arch drawing finishes (4600ms from t0)
             setTimeout(() => {
                 document.getElementById('bottomFlowersLayer').classList.add('visible');
-            }, delay);
+            }, 4600);
 
-            delay += 1000;
+            // Top flowers + Text together (5600ms from t0)
             setTimeout(() => {
+                document.getElementById('topFlowersLayer').classList.add('visible');
                 document.getElementById('textLayer').classList.add('visible');
-                // Start text drawing animation
-                document.getElementById('textDrawContainer').classList.add('drawing');
-            }, delay);
+            }, 5600);
 
-            delay += 500;
-            setTimeout(createTextSparkles, delay);
+            // Sparkles (6100ms from t0)
+            setTimeout(createTextSparkles, 6100);
 
-            delay += 500;
+            // Particles (6600ms from t0)
             setTimeout(() => {
                 document.getElementById('particlesLayer').classList.add('visible');
-            }, delay);
+            }, 6600);
         }
 
         // Copper border drawing effect - shimmer starts after drawing completes
