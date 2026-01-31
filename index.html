@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iulia & Alex - Invitație la Nuntă</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Georgia', serif;
+            background-color: #bfc4bf;
+            background-image: url('assets/background-color.png');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+        }
+
+        /* ==================== INTRO SCREEN ==================== */
+        .intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .intro-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .logo-svg {
+            width: 80vmin;
+            height: auto;
+            max-width: 500px;
+        }
+
+        /* Monogram uses copper/bronze color - brighter and thicker */
+        .logo-svg path {
+            fill: none !important;
+            stroke: #9a6d4a;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 5000;
+            stroke-dashoffset: 5000;
+        }
+
+        @keyframes draw {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        /* ==================== INVITATION CONTAINER ==================== */
+        .invitation-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s ease-in;
+            overflow: auto;
+        }
+
+        .invitation-container.visible {
+            opacity: 1;
+        }
+
+        /* Canvas wrapper - maintains aspect ratio matching SVG viewBox */
+        .invitation-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 559px;
+            aspect-ratio: 419.25 / 595.5;
+            margin: 20px;
+        }
+
+        /* All layers positioned absolutely to overlap perfectly */
+        .layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.8s ease-out;
+        }
+
+        .layer.visible {
+            opacity: 1;
+        }
+
+        .layer img,
+        .layer object,
+        .layer svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ==================== ARCH BORDER COPPER/BRONZE EFFECT ==================== */
+        .arch-border-fuse {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+        }
+
+        .arch-border-fuse.visible {
+            opacity: 1;
+        }
+
+        .arch-border-fuse svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Copper border - solid color */
+        .arch-border-path {
+            fill: none;
+            stroke: url(#copperGradient);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* ==================== TEXT EFFECTS ==================== */
+        
+        /* Text layer - slow fade in (4 seconds) */
+        .layer.text-layer {
+            transition: opacity 4s ease-out;
+        }
+        
+        /* Text object - stronger soft glow pulse */
+        .layer.text-layer object {
+            animation: text-glow-pulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes text-glow-pulse {
+            0%, 100% {
+                filter: drop-shadow(0 0 3px rgba(124, 87, 60, 0.4)) drop-shadow(0 0 6px rgba(124, 87, 60, 0.2));
+            }
+            50% {
+                filter: drop-shadow(0 0 12px rgba(124, 87, 60, 0.8)) drop-shadow(0 0 25px rgba(124, 87, 60, 0.5)) drop-shadow(0 0 40px rgba(124, 87, 60, 0.3));
+            }
+        }
+
+        /* Shimmer sweep - more obvious, masked to text only, every 4 seconds */
+        .text-shimmer-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                110deg,
+                transparent 15%,
+                rgba(255, 255, 255, 0) 30%,
+                rgba(255, 255, 255, 0.5) 42%,
+                rgba(255, 255, 255, 1) 50%,
+                rgba(255, 255, 255, 0.5) 58%,
+                rgba(255, 255, 255, 0) 70%,
+                transparent 85%
+            );
+            background-size: 300% 100%;
+            animation: text-shimmer-sweep 4s ease-in-out infinite;
+            animation-delay: 2s;
+            pointer-events: none;
+            /* Mask to text shape only */
+            mask-image: url('assets/full-text.svg');
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+            mask-position: center;
+            -webkit-mask-image: url('assets/full-text.svg');
+            -webkit-mask-size: 100% 100%;
+            -webkit-mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            opacity: 0;
+            transition: opacity 1s ease-out;
+        }
+
+        .layer.text-layer.visible .text-shimmer-overlay {
+            opacity: 1;
+        }
+
+        @keyframes text-shimmer-sweep {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* ==================== TEXT SPARKLE EFFECT ==================== */
+        .text-sparkle-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.8) 30%, rgba(255, 255, 255, 0) 70%);
+            border-radius: 50%;
+            opacity: 0;
+            animation: sparkle-twinkle ease-in-out infinite;
+        }
+
+        @keyframes sparkle-twinkle {
+            0%, 100% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1);
+            }
+        }
+
+        /* ==================== FLOWERS - NO ANIMATION ==================== */
+        
+        /* Top left flowers - static */
+        .layer.top-flowers-layer object {
+            /* No animation */
+        }
+
+        /* Bottom right flowers - static */
+        .layer.bottom-flowers-layer object {
+            /* No animation */
+        }
+
+        /* ==================== BIRDS - SLOW CIRCULAR MOVEMENT ==================== */
+        .layer.birds-layer object {
+            animation: birds-circular 12s ease-in-out infinite;
+        }
+
+        @keyframes birds-circular {
+            0% {
+                transform: translate(0, 0);
+            }
+            25% {
+                transform: translate(-8px, -5px);
+            }
+            50% {
+                transform: translate(-12px, 0);
+            }
+            75% {
+                transform: translate(-8px, 5px);
+            }
+            100% {
+                transform: translate(0, 0);
+            }
+        }
+
+        /* ==================== AMBIENT PARTICLES ==================== */
+        .particles-layer {
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            animation: float-particle ease-in-out infinite;
+        }
+
+        .particle.small {
+            width: 3px;
+            height: 3px;
+            background: radial-gradient(circle, rgba(124, 87, 60, 0.5), transparent);
+        }
+
+        .particle.medium {
+            width: 5px;
+            height: 5px;
+            background: radial-gradient(circle, rgba(124, 87, 60, 0.6), transparent);
+        }
+
+        .particle.large {
+            width: 7px;
+            height: 7px;
+            background: radial-gradient(circle, rgba(124, 87, 60, 0.4), transparent);
+        }
+
+        @keyframes float-particle {
+            0%, 100% {
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            50% {
+                transform: translateY(-120px) translateX(30px) scale(0.6);
+                opacity: 0.5;
+            }
+            90% {
+                opacity: 0.2;
+            }
+        }
+
+        /* ==================== RESPONSIVE ADJUSTMENTS ==================== */
+        @media (max-width: 600px) {
+            .invitation-wrapper {
+                margin: 10px;
+                max-width: 95vw;
+            }
+        }
+
+        @media (max-height: 700px) {
+            .invitation-wrapper {
+                max-width: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- INTRO SCREEN WITH MONOGRAM ANIMATION -->
+    <div class="intro-screen" id="introScreen">
+        <svg class="logo-svg" viewBox="620 330 560 600" xmlns="http://www.w3.org/2000/svg">
+            <g>
+                <path class="animate-path" d="M1135.8,358.11c7.54,20.84,22.07,39.35,37.96,54.51.85.81,1.82,1.38,3.01,1.46v1.46c-16.22,18.19-24.4,44.86-25.96,68.97-4.85,74.75,3.72,154.58.03,229.81-1.76,35.96-12.74,64.03-39.48,88.4-44.45,40.52-104.36,42.11-155.05,69.73-23.88,13.01-42.11,31.3-56.77,54.1-13.34-20.98-29.75-37.91-51.14-50.74-44.4-26.63-98.73-30.04-142.08-58.72-35-23.15-54.97-56.43-57.08-98.77-3.8-76.28,4.68-156.85.04-232.81-1.53-25.04-9.12-50.96-25.95-69.94,17.27-16.16,33.16-34.71,40.97-57.45,34.07,11.01,73.76,10.47,108.68,3.32,43.52-8.91,80.41-28.02,126.54-28.36,44.36-.33,83.7,19.17,126.2,27.74,36.03,7.26,74.75,8.7,110.07-2.69ZM1127.67,378.26c-20.35,2.7-40.67,5.8-61.33,4.87-63.43-2.86-117.26-37-180.77-33-30.02,1.89-58.3,14.34-87,21.89-32.73,8.61-66.88,13.44-100.81,10.06-8.51-.85-16.83-3.13-25.34-3.84-5.9,14.84-17.06,26.33-27.13,38.3,11.7,19.76,18.62,42.92,19.99,65.96,4.4,73.97-2.85,152.28-.04,226.82,4.77,126.26,127.88,105.67,204.57,161.07,11.45,8.27,21.4,17.75,29.75,29.17,20.81-27.06,49.45-43.77,80.9-55.94,34.97-13.54,72.98-20.22,104.73-41.13,55.18-36.34,48.92-81.13,49.69-140.13.77-58.82-3.79-122.92-.04-180.86,1.46-22.5,8.88-45.49,19.92-64.95-.3-3.58-3.84-4.51-5.48-6.43-8.3-9.74-16.63-19.92-21.6-31.87Z"/>
+                <path class="animate-path" d="M1127.67,378.26c4.96,11.95,13.3,22.12,21.6,31.87,1.64,1.93,5.18,2.85,5.48,6.43-11.04,19.46-18.47,42.45-19.92,64.95-3.76,57.94.8,122.04.04,180.86-.77,58.99,5.49,103.78-49.69,140.13-31.75,20.91-69.75,27.59-104.73,41.13-31.45,12.18-60.1,28.89-80.9,55.94-8.35-11.42-18.3-20.9-29.75-29.17-76.69-55.4-199.8-34.81-204.57-161.07-2.82-74.53,4.44-152.84.04-226.82-1.37-23.04-8.29-46.2-19.99-65.96,10.07-11.97,21.23-23.46,27.13-38.3,8.51.71,16.83,2.99,25.34,3.84,33.94,3.38,68.08-1.45,100.81-10.06,28.7-7.55,56.98-20,87-21.89,63.51-4.01,117.35,30.14,180.77,33,20.66.93,40.98-2.18,61.33-4.87ZM892.85,353.41c-37.05,1.8-69.27,16.98-104.68,25.19-27.61,6.4-58.18,9.61-86.41,7.48-8.62-.65-17.24-2.59-25.78-3.85-2.31.63-6.08,9.54-7.89,12.16-5.48,7.92-11.81,15.3-18.55,22.16,12.32,20.5,18.4,45.08,19.73,68.95,4.27,76.18-4.32,156.67-.03,232.8,5.74,101.9,116.48,99.4,183.88,136.8,17.71,9.83,33.72,22.67,46.43,38.46,12.68-15.43,29-28.69,46.43-38.46,67.26-37.69,178.81-35.4,184.88-136.8,4.57-76.28-4.58-157.48-.03-233.8,1.41-23.62,7.85-47.58,19.69-67.96-4.17-4.42-8.38-8.74-12.1-13.57-5.17-6.71-9.12-14.31-14.3-20.74-40.01,8.07-80.01,4.28-119.38-5.42-38.22-9.42-71-25.37-111.89-23.39Z"/>
+                <path class="animate-path" d="M892.85,353.41c40.89-1.98,73.67,13.97,111.89,23.39,39.37,9.7,79.37,13.49,119.38,5.42,5.18,6.43,9.13,14.03,14.3,20.74,3.72,4.83,7.94,9.16,12.1,13.57-11.84,20.38-18.28,44.34-19.69,67.96-4.55,76.32,4.6,157.52.03,233.8-6.07,101.41-117.63,99.11-184.88,136.8-17.44,9.77-33.76,23.03-46.43,38.46-12.71-15.8-28.72-28.63-46.43-38.46-67.4-37.4-178.14-34.9-183.88-136.8-4.29-76.14,4.3-156.62.03-232.8-1.34-23.88-7.41-48.45-19.73-68.95,6.74-6.86,13.08-14.24,18.55-22.16,1.81-2.62,5.59-11.53,7.89-12.16,8.53,1.26,17.15,3.2,25.78,3.85,28.24,2.13,58.8-1.08,86.41-7.48,35.41-8.21,67.63-23.39,104.68-25.19ZM864.72,730.41c7.48-8.98,15.69-17.36,22.73-26.73,20.06-26.69,34.23-56.69,46.09-87.78,55.3-22.78,128.69-71.33,143.66-133.07,8.2-33.84-9.4-60.03-45.76-56.75-43.75,3.94-68.42,46.66-84.61,82.23-15.46,33.95-26.89,69.78-38.01,105.34l-42.22,9.24c-1.03.04-.47-2.34-.28-3.27,2.74-13.26,8.89-28.82,12.47-42.48,7.1-27.08,24.41-109.43,48.31-123.52,3.11-1.83,23.73-6.92,17-15.16-5.03-6.17-15.66,3.95-20.04,5.12-10.38,2.77-38.12-8.16-50.17-10.84-38.2-8.5-72.49-5.83-102.73,20.78-60.38,53.14-11.13,145.67,53.88,104.83,13.31-8.36,23.41-20.6,18.38-37.2-1.8-5.96-12.38-19.56-17.22-10.81,15.83,12.37,3.81,33.54-9.34,42.83-27.09,19.14-51.92-10.21-53.66-36.71-2-30.4,24.02-63.32,52.92-70.92,31-8.15,66.22,4.23,97.4,7.53,1.45.15,2.93-.88,2.5,1.46-49.74,44.78-63.38,111.96-77.1,174.66-5.12,2.83-22.15,10.89-18.32,18.65,3.06,6.2,10.75-4.15,14.52-4.47-11.14,35.35-16.53,73.99-54.27,90.58-86.39,37.98-83.73-89.93-20.02-115.93,44.95-18.35,45.1,44.64,17.26,61.22-3.06,1.82-16.52,5.45-15.9,8.06,1.32,5.57,20.37-1.17,24.02-2.94,19.84-9.62,29.1-29.25,26.92-50.98-3.7-36.86-51.43-29.47-74.59-16.66-71.72,39.66-58.35,162.2,35.88,128.79,48.95-17.36,70.66-65.79,86.89-111.4l42.73-9.22c-10.46,32.39-24.29,69.04-45.12,96.24-13.45,17.56-15.12,12.77-33.16,20.79-7.41,3.29-30.53,15.99-24.51,26.22,5.05,8.57,22.81-1.89,28.77-5.97,5.5-3.77,14.42-14.06,18.7-16.27,6.79-3.5,21.96.34,29.34,2.37,36.47,10.03,58.01,26.74,99.39,23.46,55.88-4.43,120.44-61.33,110.11-121.07-11.41-66.02-100.82-54.42-118.62,2.67-8.31,26.65,1.9,55.88,34.41,51.4,5.21-.72,19.9-8.78,16.11-14.91-4.38-4.41-7.37,2.86-12.27,3.8-11.93,2.29-22.1-12.74-23.24-23.26-6.56-60.46,63.91-74.28,80.21-22.27,11.54,36.84-6.61,75.34-37.72,95.72-28.3,18.54-50.08,16.47-81.45,7.46-27.14-7.79-53.45-22-82.92-17.48-.6-2.37,1.73-2.25,2.64-3.33Z"/>
+                <path class="animate-path" d="M864.72,730.41c-.91,1.09-3.24.97-2.64,3.33,29.47-4.52,55.78,9.69,82.92,17.48,31.36,9,53.14,11.08,81.45-7.46,31.1-20.37,49.26-58.88,37.72-95.72-16.3-52.02-86.77-38.19-80.21,22.27,1.14,10.52,11.31,25.55,23.24,23.26,4.9-.94,7.89-8.21,12.27-3.8,3.78,6.13-10.9,14.19-16.11,14.91-32.51,4.49-42.72-24.74-34.41-51.4,17.8-57.09,107.22-68.69,118.62-2.67,10.32,59.74-54.24,116.64-110.11,121.07-41.38,3.28-62.92-13.43-99.39-23.46-7.38-2.03-22.55-5.87-29.34-2.37-4.28,2.2-13.2,12.5-18.7,16.27-5.96,4.09-23.72,14.55-28.77,5.97-6.02-10.23,17.1-22.93,24.51-26.22,18.03-8.02,19.71-3.23,33.16-20.79,20.83-27.2,34.66-63.84,45.12-96.24l-42.73,9.22c-16.23,45.61-37.94,94.05-86.89,111.4-94.23,33.41-107.6-89.13-35.88-128.79,23.15-12.8,70.89-20.19,74.59,16.66,2.18,21.74-7.08,41.37-26.92,50.98-3.65,1.77-22.7,8.51-24.02,2.94-.62-2.61,12.83-6.24,15.9-8.06,27.84-16.58,27.69-79.56-17.26-61.22-63.71,26-66.37,153.91,20.02,115.93,37.75-16.6,43.14-55.24,54.27-90.58-3.77.32-11.46,10.68-14.52,4.47-3.83-7.77,13.2-15.82,18.32-18.65,13.72-62.7,27.37-129.88,77.1-174.66.42-2.34-1.05-1.3-2.5-1.46-31.18-3.3-66.4-15.68-97.4-7.53-28.9,7.6-54.92,40.52-52.92,70.92,1.74,26.5,26.57,55.85,53.66,36.71,13.15-9.29,25.17-30.46,9.34-42.83,4.84-8.75,15.41,4.86,17.22,10.81,5.03,16.6-5.07,28.84-18.38,37.2-65.01,40.84-114.26-51.69-53.88-104.83,30.25-26.62,64.53-29.28,102.73-20.78,12.04,2.68,39.78,13.61,50.17,10.84,4.38-1.17,15.01-11.29,20.04-5.12,6.72,8.24-13.9,13.32-17,15.16-23.9,14.09-41.21,96.43-48.31,123.52-3.58,13.66-9.72,29.22-12.47,42.48-.19.93-.75,3.31.28,3.27l42.22-9.24c11.12-35.56,22.56-71.39,38.01-105.34,16.19-35.57,40.86-78.29,84.61-82.23,36.36-3.27,53.97,22.91,45.76,56.75-14.96,61.74-88.36,110.29-143.66,133.07-11.85,31.09-26.03,61.09-46.09,87.78-7.04,9.38-15.26,17.76-22.73,26.73ZM938.02,604.87c49.46-19.69,109.11-64.87,124.13-118.12,5.5-19.49,5.8-55.83-22.75-54.77-24.96.92-55.63,48.16-64.9,69.03l-36.49,103.87ZM835.11,746.75c-10.23,2.18-21.29,7.31-26.95,16.48,1.4,1.99,1.37,1.04,2.72.77,7.94-1.57,19.2-10.96,24.23-17.25Z"/>
+                <path class="animate-path" d="M938.02,604.87l36.49-103.87c9.27-20.87,39.93-68.11,64.9-69.03,28.55-1.05,28.24,35.29,22.75,54.77-15.02,53.25-74.67,98.44-124.13,118.12Z"/>
+                <path class="animate-path" d="M835.11,746.75c-5.02,6.29-16.29,15.68-24.23,17.25-1.35.27-1.32,1.22-2.72-.77,5.66-9.17,16.72-14.3,26.95-16.48Z"/>
+            </g>
+        </svg>
+    </div>
+
+    <!-- INVITATION SCREEN -->
+    <div class="invitation-container" id="invitationContainer">
+        <div class="invitation-wrapper">
+            <!-- Layer 1: Green arch -->
+            <div class="layer arch-layer" id="archLayer">
+                <object type="image/svg+xml" data="assets/green-arch-shape.svg"></object>
+            </div>
+
+            <!-- Layer 1b: Arch border copper effect -->
+            <div class="arch-border-fuse" id="archBorderFuse">
+                <svg viewBox="0 0 419.25 595.5" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="copperGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#7c573c;stop-opacity:1" />
+                            <stop offset="25%" style="stop-color:#a67c5b;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#7c573c;stop-opacity:1" />
+                            <stop offset="75%" style="stop-color:#a67c5b;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#7c573c;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <!-- Copper border -->
+                    <path id="archBorderPath" class="arch-border-path" 
+                          d="M 56.7 550
+                             L 56.7 194
+                             C 57.5 128 100.5 72 158.8 51
+                             C 175.3 45.6 192.1 42.6 209.6 42.6
+                             C 227.1 42.6 245 46.1 260.7 51.4
+                             C 319.6 72 361.9 128 362.7 194
+                             L 362.7 550"
+                          stroke-dasharray="1200"
+                          stroke-dashoffset="1200"/>
+                </svg>
+            </div>
+
+            <!-- Layer 2: Text with shimmer and sparkle -->
+            <div class="layer text-layer" id="textLayer">
+                <object type="image/svg+xml" data="assets/full-text.svg"></object>
+                <div class="text-shimmer-overlay"></div>
+                <div class="text-sparkle-container" id="textSparkleContainer"></div>
+            </div>
+
+            <!-- Layer 3: Birds -->
+            <div class="layer birds-layer" id="birdsLayer">
+                <object type="image/svg+xml" data="assets/the-small-birds.svg"></object>
+            </div>
+
+            <!-- Layer 4: Top left flowers -->
+            <div class="layer top-flowers-layer" id="topFlowersLayer">
+                <object type="image/svg+xml" data="assets/top-left-flowers.svg"></object>
+            </div>
+
+            <!-- Layer 5: Bottom right flowers -->
+            <div class="layer bottom-flowers-layer" id="bottomFlowersLayer">
+                <object type="image/svg+xml" data="assets/bottom-right-flowers.svg"></object>
+            </div>
+
+            <!-- Layer 6: Ambient particles -->
+            <div class="layer particles-layer" id="particlesLayer"></div>
+        </div>
+    </div>
+
+    <script>
+        // SLOWER monogram animation
+        // Monogram animation timing - faster drawing
+        const pathCount = 6;
+        const drawDuration = 4; // Faster: 4 seconds per path
+        const staggerDelay = 0.3; // 0.3 seconds between paths
+        const totalAnimationTime = (pathCount - 1) * staggerDelay + drawDuration;
+        // Total = (5 * 0.3) + 4 = 1.5 + 4 = 5.5 seconds
+
+        // Initialize path animations on the intro screen
+        document.addEventListener('DOMContentLoaded', function() {
+            const paths = document.querySelectorAll('.animate-path');
+            
+            paths.forEach((path, index) => {
+                const length = path.getTotalLength();
+                path.style.strokeDasharray = length;
+                path.style.strokeDashoffset = length;
+                
+                const delay = index * staggerDelay;
+                path.style.animation = `draw ${drawDuration}s ease-out ${delay}s forwards`;
+            });
+
+            // Create ambient particles
+            createParticles();
+
+            // Transition immediately after animation completes
+            setTimeout(() => {
+                triggerTransition();
+            }, totalAnimationTime * 1000);
+        });
+
+        // Create floating particles
+        function createParticles() {
+            const container = document.getElementById('particlesLayer');
+            const particleCount = 35;
+            const sizes = ['small', 'medium', 'large'];
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                const size = sizes[Math.floor(Math.random() * sizes.length)];
+                particle.className = `particle ${size}`;
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = (30 + Math.random() * 70) + '%';
+                particle.style.animationDelay = (Math.random() * 15) + 's';
+                particle.style.animationDuration = (8 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Create subtle sparkles on text area
+        function createTextSparkles() {
+            const container = document.getElementById('textSparkleContainer');
+            const sparkleCount = 25; // Increased volume
+
+            // Text area approximate bounds (within the green arch)
+            const textAreas = [
+                { x: 25, y: 15, w: 50, h: 15 },  // Top text area
+                { x: 20, y: 32, w: 60, h: 12 },  // Date area
+                { x: 20, y: 48, w: 60, h: 8 },   // Location area
+                { x: 15, y: 60, w: 70, h: 20 }   // Bottom text area
+            ];
+
+            for (let i = 0; i < sparkleCount; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                
+                // Pick a random text area
+                const area = textAreas[Math.floor(Math.random() * textAreas.length)];
+                sparkle.style.left = (area.x + Math.random() * area.w) + '%';
+                sparkle.style.top = (area.y + Math.random() * area.h) + '%';
+                
+                // Slow, elegant timing - staggered
+                sparkle.style.animationDuration = (4 + Math.random() * 4) + 's'; // 4-8 seconds
+                sparkle.style.animationDelay = (Math.random() * 8) + 's'; // Staggered start
+                
+                container.appendChild(sparkle);
+            }
+        }
+
+        // Transition from intro to invitation
+        let transitionTriggered = false;
+
+        function triggerTransition() {
+            if (transitionTriggered) return;
+            transitionTriggered = true;
+
+            const introScreen = document.getElementById('introScreen');
+            const invitationContainer = document.getElementById('invitationContainer');
+
+            // Fade out intro
+            introScreen.classList.add('fade-out');
+
+            // Show invitation container immediately
+            invitationContainer.classList.add('visible');
+            
+            // Staggered reveal of layers - consecutive delays
+            let delay = 0;
+            
+            delay += 100;
+            setTimeout(() => {
+                document.getElementById('archLayer').classList.add('visible');
+                startArchFuseEffect();
+            }, delay);
+
+            delay += 1500;
+            setTimeout(() => {
+                document.getElementById('birdsLayer').classList.add('visible');
+            }, delay);
+
+            delay += 1900;
+            setTimeout(() => {
+                document.getElementById('bottomFlowersLayer').classList.add('visible');
+            }, delay);
+
+            delay += 1000;
+            setTimeout(() => {
+                document.getElementById('topFlowersLayer').classList.add('visible');
+            }, delay);
+
+            delay += 1000;
+            setTimeout(() => {
+                document.getElementById('textLayer').classList.add('visible');
+            }, delay);
+
+            delay += 500;
+            setTimeout(createTextSparkles, delay);
+
+            delay += 500;
+            setTimeout(() => {
+                document.getElementById('particlesLayer').classList.add('visible');
+            }, delay);
+        }
+
+        // Copper border drawing effect - no fuse head
+        function startArchFuseEffect() {
+            const fuseSvg = document.getElementById('archBorderFuse');
+            const fusePath = document.getElementById('archBorderPath');
+            
+            fuseSvg.classList.add('visible');
+            
+            const pathLength = fusePath.getTotalLength();
+            
+            // Setup copper border
+            fusePath.style.strokeDasharray = pathLength;
+            fusePath.style.strokeDashoffset = pathLength;
+            fusePath.style.transition = 'stroke-dashoffset 4.5s ease-in-out';
+            
+            requestAnimationFrame(() => {
+                fusePath.style.strokeDashoffset = '0';
+            });
+        }
+    </script>
+</body>
+</html>
