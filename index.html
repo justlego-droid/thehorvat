@@ -49,10 +49,10 @@
             max-width: 500px;
         }
 
-        /* Monogram uses gold color #996515 */
+        /* Monogram uses gold color #A57b0a */
         .logo-svg path {
             fill: none !important;
-            stroke: #996515;
+            stroke: #A57b0a;
             stroke-width: 2;
             stroke-linecap: round;
             stroke-linejoin: round;
@@ -181,43 +181,81 @@
 
         /* ==================== TEXT EFFECTS ==================== */
         
-        /* Text layer container - 4 second gradual fade in */
+        /* Text layer container */
         .layer.text-layer {
-            transition: opacity 4s ease-out;
+            transition: opacity 0.5s ease-out;
         }
         
-        /* Text object */
+        /* Text reveal - smooth gradient fade from top to bottom using mask-position */
         .layer.text-layer > object {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            /* Gradient mask: solid black (visible) transitioning to transparent (hidden) */
+            /* Size is 100% wide x 200% tall so we can slide it */
+            mask-image: linear-gradient(to bottom, black 0%, black 40%, transparent 60%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 0%, black 40%, transparent 60%, transparent 100%);
+            mask-size: 100% 250%;
+            -webkit-mask-size: 100% 250%;
+            mask-position: 0% 100%;
+            -webkit-mask-position: 0% 100%;
+            mask-repeat: no-repeat;
+            -webkit-mask-repeat: no-repeat;
         }
         
-        /* Glow pulse container - clips to middle 1/3 */
+        .layer.text-layer.visible > object {
+            animation: smooth-topdown-reveal 5s ease-out forwards;
+        }
+        
+        @keyframes smooth-topdown-reveal {
+            0% {
+                mask-position: 0% 100%;
+                -webkit-mask-position: 0% 100%;
+            }
+            100% {
+                mask-position: 0% 0%;
+                -webkit-mask-position: 0% 0%;
+            }
+        }
+        
+        /* Glow pulse container - clips to (50% to 67% from top) with soft edges */
         .text-glow-middle {
             position: absolute;
-            top: 33.3%;
+            top: 50%;
             left: 0;
             width: 100%;
-            height: 33.4%;
+            height: 17%;
             overflow: hidden;
             pointer-events: none;
             opacity: 0;
-            transition: opacity 1s ease-out 3s; /* Fade in after text mostly visible */
+            transition: opacity 1s ease-out;
+            /* Soft gradient edges on all sides */
+            mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%),
+                        linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+            mask-composite: intersect;
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%),
+                               linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+            -webkit-mask-composite: source-in;
         }
         
+        /* Delay glow appearance until reveal is mostly done */
         .layer.text-layer.visible .text-glow-middle {
-            opacity: 1;
+            animation: delayed-glow-appear 1s ease-out 3.5s forwards;
+        }
+        
+        @keyframes delayed-glow-appear {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         .text-glow-middle object {
             position: absolute;
-            top: -100%;
+            top: -294%;
             left: 0;
             width: 100%;
-            height: 300%;
+            height: 588%;
             animation: text-glow-pulse 4s ease-in-out infinite;
         }
         
@@ -316,9 +354,10 @@
             /* No animation */
         }
 
-        /* Bottom right flowers - static */
+        /* Bottom right flowers - static, offset 1% down and 1% right */
         .layer.bottom-flowers-layer object {
-            /* No animation */
+            top: 1%;
+            left: 1%;
         }
 
         /* ==================== BIRDS - SLOW CIRCULAR MOVEMENT ==================== */
@@ -455,27 +494,17 @@
                 </svg>
             </div>
 
-            <!-- Layer 1c: Arch border shimmer effect - diagonal gradient sweep -->
+            <!-- Layer 1c: Arch border shimmer effect - diagonal gradient sweep (starts on demand) -->
             <div class="arch-shimmer-overlay" id="archShimmerOverlay">
                 <svg viewBox="0 0 419.25 595.5" xmlns="http://www.w3.org/2000/svg">
                     <defs>
-                        <!-- Diagonal gradient that will be animated -->
+                        <!-- Diagonal gradient - animation controlled by JS -->
                         <linearGradient id="shimmerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:rgba(255,255,255,0);stop-opacity:0">
-                                <animate attributeName="offset" values="-0.3;1.3" dur="6s" repeatCount="indefinite" begin="0s"/>
-                            </stop>
-                            <stop offset="15%" style="stop-color:rgba(255,255,255,0.4);stop-opacity:0.4">
-                                <animate attributeName="offset" values="-0.15;1.45" dur="6s" repeatCount="indefinite" begin="0s"/>
-                            </stop>
-                            <stop offset="20%" style="stop-color:rgba(255,255,255,0.9);stop-opacity:0.9">
-                                <animate attributeName="offset" values="-0.1;1.5" dur="6s" repeatCount="indefinite" begin="0s"/>
-                            </stop>
-                            <stop offset="25%" style="stop-color:rgba(255,255,255,0.4);stop-opacity:0.4">
-                                <animate attributeName="offset" values="-0.05;1.55" dur="6s" repeatCount="indefinite" begin="0s"/>
-                            </stop>
-                            <stop offset="30%" style="stop-color:rgba(255,255,255,0);stop-opacity:0">
-                                <animate attributeName="offset" values="0;1.6" dur="6s" repeatCount="indefinite" begin="0s"/>
-                            </stop>
+                            <stop id="shimmerStop1" offset="0%" style="stop-color:rgba(251,213,21,0);stop-opacity:0"/>
+                            <stop id="shimmerStop2" offset="0%" style="stop-color:rgba(251,213,21,0.4);stop-opacity:0.4"/>
+                            <stop id="shimmerStop3" offset="0%" style="stop-color:rgba(251,213,21,0.9);stop-opacity:0.9"/>
+                            <stop id="shimmerStop4" offset="0%" style="stop-color:rgba(251,213,21,0.4);stop-opacity:0.4"/>
+                            <stop id="shimmerStop5" offset="0%" style="stop-color:rgba(251,213,21,0);stop-opacity:0"/>
                         </linearGradient>
                     </defs>
                     <!-- Shimmer glow on arch border using diagonal sweep -->
@@ -522,13 +551,12 @@
     </div>
 
     <script>
-        // SLOWER monogram animation
-        // Monogram animation timing - faster drawing
+        // Monogram animation timing - 20% slower
         const pathCount = 6;
-        const drawDuration = 4; // Faster: 4 seconds per path
-        const staggerDelay = 0.3; // 0.3 seconds between paths
+        const drawDuration = 4.8; // 20% slower: 4.8 seconds per path
+        const staggerDelay = 0.36; // 20% slower: 0.36 seconds between paths
         const totalAnimationTime = (pathCount - 1) * staggerDelay + drawDuration;
-        // Total = (5 * 0.3) + 4 = 1.5 + 4 = 5.5 seconds
+        // Total = (5 * 0.36) + 4.8 = 1.8 + 4.8 = 6.6 seconds
 
         // Initialize path animations on the intro screen
         document.addEventListener('DOMContentLoaded', function() {
@@ -664,20 +692,58 @@
             fuseSvg.classList.add('visible');
             
             const pathLength = fusePath.getTotalLength();
+            const drawTime = 4.5; // seconds
             
-            // Setup copper border
+            // Setup copper border drawing
             fusePath.style.strokeDasharray = pathLength;
             fusePath.style.strokeDashoffset = pathLength;
-            fusePath.style.transition = 'stroke-dashoffset 4.5s ease-in-out';
+            fusePath.style.transition = `stroke-dashoffset ${drawTime}s ease-in-out`;
             
             requestAnimationFrame(() => {
                 fusePath.style.strokeDashoffset = '0';
             });
             
-            // Start shimmer effect AFTER drawing completes (4.5s)
+            // Start shimmer effect AFTER drawing completes
             setTimeout(() => {
                 archShimmer.classList.add('visible');
-            }, 4500);
+                startShimmerAnimation();
+            }, drawTime * 1000);
+        }
+        
+        // Shimmer animation controlled by JS - starts fresh when called
+        function startShimmerAnimation() {
+            const stops = [
+                { id: 'shimmerStop1', startOffset: -0.3, endOffset: 1.3 },
+                { id: 'shimmerStop2', startOffset: -0.15, endOffset: 1.45 },
+                { id: 'shimmerStop3', startOffset: -0.1, endOffset: 1.5 },
+                { id: 'shimmerStop4', startOffset: -0.05, endOffset: 1.55 },
+                { id: 'shimmerStop5', startOffset: 0, endOffset: 1.6 }
+            ];
+            
+            const duration = 7200; // 7.2 seconds in ms
+            
+            function animateShimmer() {
+                const startTime = performance.now();
+                
+                function update(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = (elapsed % duration) / duration;
+                    
+                    stops.forEach(stop => {
+                        const element = document.getElementById(stop.id);
+                        if (element) {
+                            const offset = stop.startOffset + (stop.endOffset - stop.startOffset) * progress;
+                            element.setAttribute('offset', `${offset * 100}%`);
+                        }
+                    });
+                    
+                    requestAnimationFrame(update);
+                }
+                
+                requestAnimationFrame(update);
+            }
+            
+            animateShimmer();
         }
     </script>
 </body>
