@@ -186,37 +186,26 @@
             transition: opacity 0.5s ease-out;
         }
         
-        /* Text reveal - smooth gradient fade from top to bottom using mask-position */
+        /* Text reveal - clip-path animation (cross-browser compatible) */
         .layer.text-layer > object {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            /* Gradient mask: solid black (visible) transitioning to transparent (hidden) */
-            /* Size is 100% wide x 200% tall so we can slide it */
-            mask-image: linear-gradient(to bottom, black 0%, black 40%, transparent 60%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, black 0%, black 40%, transparent 60%, transparent 100%);
-            mask-size: 100% 250%;
-            -webkit-mask-size: 100% 250%;
-            mask-position: 0% 100%;
-            -webkit-mask-position: 0% 100%;
-            mask-repeat: no-repeat;
-            -webkit-mask-repeat: no-repeat;
+            clip-path: inset(0 0 100% 0);
         }
         
         .layer.text-layer.visible > object {
-            animation: smooth-topdown-reveal 5s ease-out forwards;
+            animation: clip-reveal 5s ease-out forwards;
         }
         
-        @keyframes smooth-topdown-reveal {
-            0% {
-                mask-position: 0% 100%;
-                -webkit-mask-position: 0% 100%;
+        @keyframes clip-reveal {
+            0% { 
+                clip-path: inset(0 0 100% 0); 
             }
-            100% {
-                mask-position: 0% 0%;
-                -webkit-mask-position: 0% 0%;
+            100% { 
+                clip-path: inset(0 0 0% 0); 
             }
         }
         
@@ -518,13 +507,13 @@
             <div class="arch-shimmer-overlay" id="archShimmerOverlay">
                 <svg viewBox="0 0 419.25 595.5" xmlns="http://www.w3.org/2000/svg">
                     <defs>
-                        <!-- Diagonal gradient - animation controlled by JS -->
+                        <!-- Diagonal gradient - champagne color, animation controlled by JS -->
                         <linearGradient id="shimmerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop id="shimmerStop1" offset="0%" style="stop-color:rgba(251,213,21,0);stop-opacity:0"/>
-                            <stop id="shimmerStop2" offset="0%" style="stop-color:rgba(251,213,21,0.4);stop-opacity:0.4"/>
-                            <stop id="shimmerStop3" offset="0%" style="stop-color:rgba(251,213,21,0.9);stop-opacity:0.9"/>
-                            <stop id="shimmerStop4" offset="0%" style="stop-color:rgba(251,213,21,0.4);stop-opacity:0.4"/>
-                            <stop id="shimmerStop5" offset="0%" style="stop-color:rgba(251,213,21,0);stop-opacity:0"/>
+                            <stop id="shimmerStop1" offset="0%" style="stop-color:rgba(247,231,206,0);stop-opacity:0"/>
+                            <stop id="shimmerStop2" offset="0%" style="stop-color:rgba(247,231,206,0.4);stop-opacity:0.4"/>
+                            <stop id="shimmerStop3" offset="0%" style="stop-color:rgba(247,231,206,0.9);stop-opacity:0.9"/>
+                            <stop id="shimmerStop4" offset="0%" style="stop-color:rgba(247,231,206,0.4);stop-opacity:0.4"/>
+                            <stop id="shimmerStop5" offset="0%" style="stop-color:rgba(247,231,206,0);stop-opacity:0"/>
                         </linearGradient>
                     </defs>
                     <!-- Shimmer glow on arch border using diagonal sweep -->
