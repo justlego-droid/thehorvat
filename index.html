@@ -319,11 +319,21 @@
             position: absolute;
             width: 4px;
             height: 4px;
-            background: radial-gradient(circle, rgba(251, 213, 21, 1) 0%, rgba(251, 213, 21, 0.6) 30%, rgba(251, 213, 21, 0) 70%);
             border-radius: 50%;
             opacity: 0;
             animation: sparkle-twinkle ease-in-out infinite;
-            box-shadow: 0 0 3px rgba(251, 213, 21, 0.8);
+        }
+
+        /* Champagne sparkles */
+        .sparkle.champagne {
+            background: radial-gradient(circle, rgba(247, 231, 206, 1) 0%, rgba(247, 231, 206, 0.6) 30%, rgba(247, 231, 206, 0) 70%);
+            box-shadow: 0 0 3px rgba(247, 231, 206, 0.8);
+        }
+
+        /* Light pink sparkles */
+        .sparkle.pink {
+            background: radial-gradient(circle, rgba(232, 194, 194, 1) 0%, rgba(232, 194, 194, 0.6) 30%, rgba(232, 194, 194, 0) 70%);
+            box-shadow: 0 0 3px rgba(232, 194, 194, 0.8);
         }
 
         @keyframes sparkle-twinkle {
@@ -373,7 +383,7 @@
             }
         }
 
-        /* ==================== GOLDEN FAIRY DUST PARTICLES ==================== */
+        /* ==================== FAIRY DUST PARTICLES - CHAMPAGNE & PINK ==================== */
         .particles-layer {
             pointer-events: none;
             overflow: hidden;
@@ -393,19 +403,26 @@
             text-shadow: 0 0 4px currentColor, 0 0 8px currentColor;
         }
 
+        /* Champagne colored particles */
         .particle.tiny {
             font-size: 4px;
-            color: rgba(251, 213, 21, 0.7);
+            color: rgba(247, 231, 206, 0.8);
         }
 
         .particle.small {
             font-size: 6px;
-            color: rgba(251, 213, 21, 0.8);
+            color: rgba(247, 231, 206, 0.9);
         }
 
+        /* Light pink colored particles */
         .particle.medium {
-            font-size: 8px;
-            color: rgba(165, 123, 10, 0.7);
+            font-size: 5px;
+            color: rgba(232, 194, 194, 0.8);
+        }
+        
+        .particle.pink {
+            font-size: 5px;
+            color: rgba(222, 184, 184, 0.85);
         }
 
         @keyframes float-and-twinkle {
@@ -589,28 +606,29 @@
             }, totalAnimationTime * 1000);
         });
 
-        // Create golden fairy dust particles
+        // Create fairy dust particles - champagne and pink
         function createParticles() {
             const container = document.getElementById('particlesLayer');
-            const particleCount = 20; // Fewer, more elegant
-            const sizes = ['tiny', 'tiny', 'small', 'small', 'medium']; // More tiny/small than medium
+            const particleCount = 20;
+            const sizes = ['tiny', 'tiny', 'small', 'small', 'medium', 'pink']; // Mix of champagne and pink
 
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 const size = sizes[Math.floor(Math.random() * sizes.length)];
                 particle.className = `particle ${size}`;
-                particle.style.left = (10 + Math.random() * 80) + '%'; // Keep within arch area
+                particle.style.left = (10 + Math.random() * 80) + '%';
                 particle.style.top = (35 + Math.random() * 55) + '%';
                 particle.style.animationDelay = (Math.random() * 12) + 's';
-                particle.style.animationDuration = (10 + Math.random() * 8) + 's'; // Slower, more graceful
+                particle.style.animationDuration = (10 + Math.random() * 8) + 's';
                 container.appendChild(particle);
             }
         }
 
-        // Create subtle sparkles on text area
+        // Create subtle sparkles on text area - champagne and pink
         function createTextSparkles() {
             const container = document.getElementById('textSparkleContainer');
-            const sparkleCount = 25; // Increased volume
+            const sparkleCount = 25;
+            const colors = ['champagne', 'champagne', 'champagne', 'pink', 'pink']; // More champagne than pink
 
             // Text area approximate bounds (within the green arch)
             const textAreas = [
@@ -622,7 +640,8 @@
 
             for (let i = 0; i < sparkleCount; i++) {
                 const sparkle = document.createElement('div');
-                sparkle.className = 'sparkle';
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                sparkle.className = `sparkle ${color}`;
                 
                 // Pick a random text area
                 const area = textAreas[Math.floor(Math.random() * textAreas.length)];
@@ -630,8 +649,8 @@
                 sparkle.style.top = (area.y + Math.random() * area.h) + '%';
                 
                 // Slow, elegant timing - staggered
-                sparkle.style.animationDuration = (4 + Math.random() * 4) + 's'; // 4-8 seconds
-                sparkle.style.animationDelay = (Math.random() * 8) + 's'; // Staggered start
+                sparkle.style.animationDuration = (4 + Math.random() * 4) + 's';
+                sparkle.style.animationDelay = (Math.random() * 8) + 's';
                 
                 container.appendChild(sparkle);
             }
