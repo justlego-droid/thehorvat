@@ -186,27 +186,19 @@
             transition: opacity 0.5s ease-out;
         }
         
-        /* Text reveal - clip-path animation (cross-browser compatible) */
+        /* Text reveal - simple opacity fade (most reliable cross-browser) */
         .layer.text-layer > object {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            clip-path: inset(0 0 100% 0);
+            opacity: 0;
+            transition: opacity 5s ease-out;
         }
         
         .layer.text-layer.visible > object {
-            animation: clip-reveal 5s ease-out forwards;
-        }
-        
-        @keyframes clip-reveal {
-            0% { 
-                clip-path: inset(0 0 100% 0); 
-            }
-            100% { 
-                clip-path: inset(0 0 0% 0); 
-            }
+            opacity: 1;
         }
         
         /* Glow pulse container - clips to (50% to 67% from top) with soft edges */
@@ -257,51 +249,9 @@
             }
         }
 
-        /* Shimmer sweep - more obvious, masked to text only, every 4 seconds */
+        /* Text shimmer overlay - DISABLED for mobile compatibility */
         .text-shimmer-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                110deg,
-                transparent 15%,
-                rgba(255, 255, 255, 0) 30%,
-                rgba(255, 255, 255, 0.5) 42%,
-                rgba(255, 255, 255, 1) 50%,
-                rgba(255, 255, 255, 0.5) 58%,
-                rgba(255, 255, 255, 0) 70%,
-                transparent 85%
-            );
-            background-size: 300% 100%;
-            animation: text-shimmer-sweep 4s ease-in-out infinite;
-            animation-delay: 2s;
-            pointer-events: none;
-            /* Mask to text shape only */
-            mask-image: url('assets/full-text.svg');
-            mask-size: 100% 100%;
-            mask-repeat: no-repeat;
-            mask-position: center;
-            -webkit-mask-image: url('assets/full-text.svg');
-            -webkit-mask-size: 100% 100%;
-            -webkit-mask-repeat: no-repeat;
-            -webkit-mask-position: center;
-            opacity: 0;
-            transition: opacity 1s ease-out;
-        }
-
-        .layer.text-layer.visible .text-shimmer-overlay {
-            opacity: 1;
-        }
-
-        @keyframes text-shimmer-sweep {
-            0% {
-                background-position: 200% 0;
-            }
-            100% {
-                background-position: -200% 0;
-            }
+            display: none;
         }
 
         /* ==================== TEXT SPARKLE EFFECT ==================== */
