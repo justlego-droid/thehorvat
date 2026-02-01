@@ -328,12 +328,13 @@
 
         .sparkle {
             position: absolute;
-            width: 5px;
-            height: 5px;
-            background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.8) 30%, rgba(255, 255, 255, 0) 70%);
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, rgba(251, 213, 21, 1) 0%, rgba(251, 213, 21, 0.6) 30%, rgba(251, 213, 21, 0) 70%);
             border-radius: 50%;
             opacity: 0;
             animation: sparkle-twinkle ease-in-out infinite;
+            box-shadow: 0 0 3px rgba(251, 213, 21, 0.8);
         }
 
         @keyframes sparkle-twinkle {
@@ -342,8 +343,8 @@
                 transform: scale(0.5);
             }
             50% {
-                opacity: 0.8;
-                transform: scale(1);
+                opacity: 0.9;
+                transform: scale(1.2);
             }
         }
 
@@ -383,7 +384,7 @@
             }
         }
 
-        /* ==================== AMBIENT PARTICLES ==================== */
+        /* ==================== GOLDEN FAIRY DUST PARTICLES ==================== */
         .particles-layer {
             pointer-events: none;
             overflow: hidden;
@@ -391,42 +392,61 @@
 
         .particle {
             position: absolute;
-            border-radius: 50%;
-            animation: float-particle ease-in-out infinite;
+            animation: float-and-twinkle ease-in-out infinite;
+        }
+
+        /* Tiny star/diamond shape using CSS */
+        .particle::before {
+            content: '✦';
+            display: block;
+            font-size: inherit;
+            color: inherit;
+            text-shadow: 0 0 4px currentColor, 0 0 8px currentColor;
+        }
+
+        .particle.tiny {
+            font-size: 4px;
+            color: rgba(251, 213, 21, 0.7);
         }
 
         .particle.small {
-            width: 3px;
-            height: 3px;
-            background: radial-gradient(circle, rgba(124, 87, 60, 0.5), transparent);
+            font-size: 6px;
+            color: rgba(251, 213, 21, 0.8);
         }
 
         .particle.medium {
-            width: 5px;
-            height: 5px;
-            background: radial-gradient(circle, rgba(124, 87, 60, 0.6), transparent);
+            font-size: 8px;
+            color: rgba(165, 123, 10, 0.7);
         }
 
-        .particle.large {
-            width: 7px;
-            height: 7px;
-            background: radial-gradient(circle, rgba(124, 87, 60, 0.4), transparent);
-        }
-
-        @keyframes float-particle {
+        @keyframes float-and-twinkle {
             0%, 100% {
-                transform: translateY(0) translateX(0) scale(1);
+                transform: translateY(0) translateX(0) scale(0.3) rotate(0deg);
                 opacity: 0;
             }
             10% {
-                opacity: 0.8;
+                opacity: 0;
+            }
+            20% {
+                transform: translateY(-20px) translateX(5px) scale(1) rotate(45deg);
+                opacity: 0.9;
+            }
+            35% {
+                opacity: 0.3;
             }
             50% {
-                transform: translateY(-120px) translateX(30px) scale(0.6);
-                opacity: 0.5;
+                transform: translateY(-60px) translateX(15px) scale(0.7) rotate(90deg);
+                opacity: 0.8;
             }
-            90% {
+            65% {
                 opacity: 0.2;
+            }
+            80% {
+                transform: translateY(-100px) translateX(10px) scale(0.5) rotate(135deg);
+                opacity: 0.6;
+            }
+            95% {
+                opacity: 0;
             }
         }
 
@@ -580,20 +600,20 @@
             }, totalAnimationTime * 1000);
         });
 
-        // Create floating particles
+        // Create golden fairy dust particles
         function createParticles() {
             const container = document.getElementById('particlesLayer');
-            const particleCount = 35;
-            const sizes = ['small', 'medium', 'large'];
+            const particleCount = 20; // Fewer, more elegant
+            const sizes = ['tiny', 'tiny', 'small', 'small', 'medium']; // More tiny/small than medium
 
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 const size = sizes[Math.floor(Math.random() * sizes.length)];
                 particle.className = `particle ${size}`;
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = (30 + Math.random() * 70) + '%';
-                particle.style.animationDelay = (Math.random() * 15) + 's';
-                particle.style.animationDuration = (8 + Math.random() * 10) + 's';
+                particle.style.left = (10 + Math.random() * 80) + '%'; // Keep within arch area
+                particle.style.top = (35 + Math.random() * 55) + '%';
+                particle.style.animationDelay = (Math.random() * 12) + 's';
+                particle.style.animationDuration = (10 + Math.random() * 8) + 's'; // Slower, more graceful
                 container.appendChild(particle);
             }
         }
